@@ -1,0 +1,101 @@
+window.onload = function () {
+    
+
+    var cartTable = document.getElementById('cartTable');
+    var tr = cartTable.children[1].rows;
+    var checkInputs = document.getElementsByClassName('check');
+    var selectedTotal = document.getElementById('selectedTotal');
+    var priceTotal = document.getElementById('priceTotal');
+  
+    
+    //// compute total
+    function getTotal() {
+        var seleted = 0;
+        var price = 0;
+        for (var i = 0, len = tr.length; i < len; i++) {
+            if (tr[i].getElementsByTagName('input')[0].checked) {
+                tr[i].className = 'on';
+                seleted += parseInt(tr[i].getElementsByTagName('input')[1].value);
+                price += parseFloat(tr[i].cells[4].innerHTML);
+            }
+            else {
+                tr[i].className = '';
+            }
+        }
+
+        selectedTotal.innerHTML = seleted;
+        priceTotal.innerHTML = price.toFixed(2);
+ 
+    }
+
+    //Subtotal
+    function getSubTotal(tr) {
+        var tds = tr.cells;
+        var price = parseFloat(tds[2].innerHTML);
+        var count = parseInt(tr.getElementsByTagName('input')[1].value);
+        var SubTotal = parseFloat(price * count);
+        tds[4].innerHTML = SubTotal.toFixed(2);
+    }
+
+    for (var i = 0 , len = checkInputs.length; i < len; i++) {
+        checkInputs[i].onclick = function () {
+           getTotal();
+        }
+    }
+
+   
+
+    for (var i = 0; i < tr.length; i++) {
+        tr[i].onclick = function (e) {
+            e = e || window.event;
+            var el = e.srcElement;
+            var cls = el.className;
+            var input = this.getElementsByTagName('input')[1];
+            var val = parseInt(input.value);
+            var reduce = this.getElementsByTagName('span')[1];
+            switch (cls) {
+                case 'add':
+                    input.value = val + 1;
+                    reduce.innerHTML = '-';
+                    getSubTotal(this);
+                    break;
+                case 'reduce':
+                    if (val > 1) {
+                        input.value = val - 1;
+                    }
+                    if (input.value <= 1) {
+                        reduce.innerHTML = '';
+                    }
+                    getSubTotal(this);
+                    break;
+                case 'delete':
+                    var conf = confirm('Do you want to delete this item？');
+                    if (conf) {
+                        this.parentNode.removeChild(this);
+                    }
+                    break
+                default :
+                    break;
+            }
+            getTotal();
+        }
+        tr[i].getElementsByTagName('input')[1].onkeyup = function () {
+            var val = parseInt(this.value);
+            var tr = this.parentNode.parentNode
+            var reduce = tr.getElementsByTagName('span')[1];
+            if (isNaN(val) || val < 1) {
+                val = 1;
+            }
+            this.value = val;
+            if (val <= 1) {
+                reduce.innerHTML = '';
+            }
+            else {
+                reduce.innerHTML = '-';
+            }
+            getSubTotal(tr);
+            getTotal();
+        }
+    }
+
+}
